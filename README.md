@@ -1,4 +1,4 @@
-# CYB 332 Multi-Agent Penetration Testing Tool
+# Multi-Agent Penetration Testing Tool
 
 ## Project Overview 
 <p>This project is a Python-based, multi-agent LLM penetration testing tool designed to automate the stages of a penetration test against a controlled, isolated target environment. This tool contains four agents that are each responsible for a distinct phase of the penetration testing lifecycle. The agent then communicates its findings to the downstream agents. This tool will leverage the Anthropic Claude API for reasoning and decision-making. The tool coordinates each agent to perform their tasks. This is all done in the Metasploitable 2 environment.</p>
