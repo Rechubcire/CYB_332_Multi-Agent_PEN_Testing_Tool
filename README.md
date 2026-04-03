@@ -39,20 +39,38 @@
 ## 📂 Project Structure
 
     ├── src/
-    |   ├── agents/
-    |   |   ├── orchestrator.py    # Scope enforcement and agent coordinator
-    |   |   ├── reconnaissance.py  # Tool wrappers and information gathering
-    |   |   ├── analyst.py         # CVE Mapping and analysis
-    |   |   └── reporter.py        # Documentation/PDF Report generator
-    |   ├── core/
-    |   |   ├── state_managment.py # JSON state handler
-    |   |   └── llm_integration.py # Claude Integration
-    |   └── main.py                # Entry point and main interface
-    ├── docs/                      # Documents and graphs
-    ├── tests/                     # Unit test for agent logic
-    ├── .env.example               # Template for API keys and environment variables
-    ├── requirements.txt           # Dependencies used by agents
-    └── README.md                  
+    │   ├── agents/
+    │   │   ├── orchestrator.py        # Scope enforcement and agent coordinator
+    │   │   ├── recon.py               # Tool wrappers and information gathering
+    │   │   ├── vuln_analyst.py        # CVE mapping and vulnerability analysis
+    │   │   └── report_writer.py       # Pentest report generator
+    │   ├── core/
+    │   │   ├── state.py               # JSON state handler
+    │   │   ├── llm_client.py          # Claude/LLM integration
+    │   │   └── scope_guard.py         # Scope validation and enforcement
+    │   └── main.py                    # Entry point and main interface
+    ├── tools/
+    │   ├── nmap_wrapper.py            # nmap subprocess wrapper
+    │   ├── gobuster_wrapper.py        # gobuster subprocess wrapper
+    │   ├── curl_wrapper.py            # curl HTTP header grabber
+    │   └── whois_wrapper.py           # whois lookup wrapper
+    ├── prompts/
+    │   ├── orchestrator_system.txt    # System prompt for Agent 1
+    │   ├── recon_system.txt           # System prompt for Agent 2
+    │   ├── vuln_analyst_system.txt    # System prompt for Agent 3
+    │   └── report_writer_system.txt   # System prompt for Agent 4
+    ├── tests/
+    │   ├── test_scope_guard.py        
+    │   └── test_state_schema.py       
+    ├── output/                        # Created at runtime — add to .gitignore
+    │   ├── state.json                 # Full state object from completed run
+    │   ├── report.txt                 # Human-readable pentest report
+    │   └── run.log                    # All LLM calls and tool outputs
+    ├── docs/                          # Architecture diagrams and documents
+    ├── .env.example                   # Template for API keys and env variables
+    ├── .gitignore                     # Must include .env and output/
+    ├── requirements.txt               # Python dependencies
+    └── README.md
 
 ## 🚀 Setup & Installation
 <ol>
