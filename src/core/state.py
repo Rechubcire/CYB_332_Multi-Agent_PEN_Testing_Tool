@@ -91,6 +91,24 @@ def log_error(state: dict, agent:str, error_message: str) -> None:
 
     state["errors"].append(error_entry)
 
+def save_state_to_disk(state: dict, path="output/state.json") -> None:
+    """
+    Check to see if a state file exist, if not create it
+    add the serialize JSON state to the state.json file
+    save the JSON file to the output folder
+    """
+
+    with open(path, 'w') as file:# Open file from provided path as write
+
+        # Serialize the state as JSON
+        json_string = json.dump(state, indent=2, default=str)
+
+        file.write(json_string)
+
+    file.close()
+
+    
+
 def validate_section(state: dict, section: str) -> bool:
     """
     Checks all sections to make sure they have the
