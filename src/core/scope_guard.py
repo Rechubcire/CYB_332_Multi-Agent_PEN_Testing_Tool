@@ -39,7 +39,7 @@ def enforce_scope(target_ip: str, scope_cidr: str) -> None:
     in scope then raise the ScopeViolationError
     exception
     """
-    if is_in_scope(target_ip, scope_cidr):
+    if not is_in_scope(target_ip, scope_cidr):
         raise ScopeViolationError(
             f"Scope Violation Error: {target_ip} is not included in the given scope {scope_cidr}.")
     

@@ -22,7 +22,7 @@ def call_llm(system_prompt: str, user_content: str, max_tokens=1500, agent_name=
     # Other providers can also be added but we
     # will only use Anthropic and Groq
     if provider == "anthropic":
-        client = anthropic.Anthropic(os.getenv("ANTHROPIC_API_KEY"))
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         response = client.messages.create(
             model = 'claude-sonnet-4-5',
             max_tokens = max_tokens,
@@ -33,7 +33,7 @@ def call_llm(system_prompt: str, user_content: str, max_tokens=1500, agent_name=
         raw_text = response.content[0].text
 
     elif provider == "groq":
-        client = Groq(api_key=os.getenv("GORQ_API_KEY"))
+        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages= [
@@ -77,11 +77,14 @@ def log_llm_call(agent_name: str, system_prompt: str, user_content: str, raw_tex
     Appends the returned JSON output from the LLM
     as parsed text to the run.log file
     """
+    # Make sure the output dir exists
+    os.makedirs("output", exist_ok=True)
 
     entry = { 
-        "timestamp": datetime.now(timezone.utc).isoformat,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "agent": agent_name,
         "provider": os.getenv("LLM_PROVIDER", "unknown"),
+        "user_content": user_content,
         "system_prompt": system_prompt,
         "raw_response": raw_text,
         "parsed_output": parsed,
@@ -91,15 +94,14 @@ def log_llm_call(agent_name: str, system_prompt: str, user_content: str, raw_tex
     with open("output/run.log", "a") as file:
         file.write(json.dumps(entry))
 
-    file.close()
 
-def load_prompt(filename: str) -> None:
+def load_prompt(filename: str) -> str:
     path = os.path.join("prompts", filename)
     
     try:
         with open(path, "r") as file:
             prompt = file.read()
     except FileNotFoundError:
-        print("Error: the file {path} was not found.")
+        print(f"Error: the file {path} was not found.")
 
     return prompt

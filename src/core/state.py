@@ -97,15 +97,16 @@ def save_state_to_disk(state: dict, path="output/state.json") -> None:
     add the serialize JSON state to the state.json file
     save the JSON file to the output folder
     """
+    # Make sure the output dir exists
+    os.makedirs("output", exist_ok=True)
 
     with open(path, 'w') as file:# Open file from provided path as write
 
         # Serialize the state as JSON
-        json_string = json.dump(state, indent=2, default=str)
+        json_string = json.dumps(state, indent=2, default=str)
 
         file.write(json_string)
 
-    file.close()
 
     
 
