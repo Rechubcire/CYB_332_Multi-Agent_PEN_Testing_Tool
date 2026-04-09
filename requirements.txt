@@ -4,3 +4,4 @@ python-dotenv>=1.2.2
 python-nmap>=0.7.1
 jsonschema>=4.26.0
 pydantic>=2.12.5
+pytest>=8.0.0
