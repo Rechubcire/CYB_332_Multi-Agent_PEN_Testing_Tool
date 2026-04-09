@@ -5,11 +5,30 @@
 """
 
 import uuid
+from typing import TypedDict, Dict, List
 from datetime import datetime, timezone
 import json
 import os
 
-def initialise_state(target_ip: str, scope: str, allowed_ports: list) -> dict:
+class AgentState(TypedDict):
+    # Meta data Orch initializes at start up
+    session_id: str
+    timestamp: str
+    target_ip: str
+    scope: str
+    allowed_ports: str
+    status: str
+
+    # Model specific state info
+    recon: Dict
+    vuln: List
+    report: Dict
+
+    # Logs
+    error: List
+    event: List
+
+def initialise_state(target_ip: str, scope: str, allowed_ports: list) -> AgentState:
     """
     Called by the Orchestrator agent to initialise the set
     JSON state. Other agents to fill in recon, vuln, and report
@@ -18,53 +37,54 @@ def initialise_state(target_ip: str, scope: str, allowed_ports: list) -> dict:
     scope, allowed_ports, and tool status.
     """
 
-    return {
-        "meta": {
-            "session_id": str(uuid.uuid4()),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "target_ip": target_ip,
-            "scope": scope,
-            "allowed_ports": allowed_ports,
-            "status": "Pending" # [Pending, Running, Complete, Failed]
-        },
-        "recon": {}, # scan_time, open_ports, os_detection, web_paths, whois_raw, nmap_raw
-        "vuln": [], # list of dict containing (id, port, service, severity, cve)
-        "report": {}, # executive_summary, scope_and_methodology, findings, risk_matrix, risk_rating_overall
-        "errors": [], # list of dict containing (timestamp, agent, error_message)
-        "logs": [] # list of dict containing (timestamp, agent, event_message)
-    }
+    return AgentState(
+        
+        session_id = str(uuid.uuid4()),
+        timestamp = datetime.now(timezone.utc).isoformat(),
+        target_ip = target_ip,
+        scope = scope,
+        allowed_ports = allowed_ports,
+        status = "Pending", # [Pending, Running, Complete, Failed]
 
-def update_status(state: dict, status: str) -> None:
+        recon = {}, # scan_time, open_ports, os_detection, web_paths, whois_raw, nmap_raw
+        vuln = [], # list of dict containing (id, port, service, severity, cve)
+        report = {}, # executive_summary, scope_and_methodology, findings, risk_matrix, risk_rating_overall
+
+        errors = [], # list of dict containing (timestamp, agent, error_message)
+        event = [] # list of dict containing (timestamp, agent, event_message)
+    )
+
+def update_status(state: AgentState, status: str) -> dict:
     """
     Given a state and a status update the status of the given state
     to the given status. This is done when running certain agents and
     updating the status to reflect what is happening.
     """
-    state["meta"]["status"] = status
+    return { "status": status}
 
-def write_recon(state: dict, recon_data: dict) -> None:
+def write_recon(state: AgentState, recon_data: dict) -> dict:
     """
     Write the recon agent's output into state["recon"]
     Called by agent 2 (recon) after the tool has 
     executed and LLM parsing
     """
-    state["recon"] = recon_data
+    return { "recon": recon_data}
 
-def write_vuln(state: dict, vulnerabilities: list) -> None:
+def write_vuln(state: AgentState, vulnerabilities: list) -> dict:
     """
     Writes the output from agent 3 (vuln) after analysis
     and reasoning by the LLM
     """
-    state["vuln"] = vulnerabilities
+    return { "vuln": vulnerabilities}
 
-def write_report(state: dict, report_data: dict) -> None:
+def write_report(state: AgentState, report_data: dict) -> dict:
     """
     Writes the output from agent 4 (report writer)
     to the JSON state
     """
-    state["report"] = report_data
+    return { "report": report_data}
 
-def log_event(state:dict, agent: str, message: str) -> None:
+def log_event(state:dict, agent: str, message: str) -> dict:
     """
     Create a event log dictionary containing a timestamp,
     agent in use, and the log message. Add it to the JSON state.
@@ -75,9 +95,9 @@ def log_event(state:dict, agent: str, message: str) -> None:
         "event_message": message
     }
 
-    state["logs"].append(event_entry)
+    return { "event": state["event"] + [event_entry]}
 
-def log_error(state: dict, agent:str, error_message: str) -> None:
+def log_error(state: AgentState, agent:str, error_message: str) -> dict:
     """
     Create an error log when an error occurs, includes a
     timestamp, the agent in use, and an error message
@@ -89,9 +109,9 @@ def log_error(state: dict, agent:str, error_message: str) -> None:
         "error_message": error_message
     }
 
-    state["errors"].append(error_entry)
+    return { "error": state["error"] + [error_entry]}    
 
-def save_state_to_disk(state: dict, path="output/state.json") -> None:
+def save_state_to_disk(state: AgentState, path="output/state.json") -> None:
     """
     Check to see if a state file exist, if not create it
     add the serialize JSON state to the state.json file
@@ -110,7 +130,7 @@ def save_state_to_disk(state: dict, path="output/state.json") -> None:
 
     
 
-def validate_section(state: dict, section: str) -> bool:
+def validate_section(state: AgentState, section: str) -> bool:
     """
     Checks all sections to make sure they have the
     correct structure and that they exist

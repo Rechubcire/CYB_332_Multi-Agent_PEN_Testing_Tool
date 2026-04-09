@@ -8,7 +8,7 @@ import sys
 import argparse
 import ipaddress
 from src.agents.orchestrator import build_graph
-from src.core.state import initialise_state, save_state_to_disk, AgentState
+from src.core.state import initialise_state, save_state_to_disk
 from src.core.scope_guard import ScopeViolationError
 
 def is_valid_ip(target_ip: str) -> bool:
