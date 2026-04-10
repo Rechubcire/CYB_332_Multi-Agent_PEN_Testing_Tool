@@ -93,7 +93,7 @@ def main():
         print(f"Error: The provided value of {args.port} for '--port' is invalid. Must be a port range e.g.'80' or '1-65535'")
         sys.exit(1)
 
-    print("Input verified initializing state and building the pipeline.")
+    print("Input verified, initializing state and building the pipeline.")
 
      # Create initial state from user input and build graph
     initial_state = initialise_state(args.target_ip, args.scope, port_list)

@@ -1,0 +1,21 @@
+{
+  "session_id": "7a90fe81-43ca-4d65-bcf1-3092ca99171e",
+  "timestamp": "2026-04-10T01:55:40.608951+00:00",
+  "target_ip": "192.168.56.101",
+  "scope": "192.168.56.101/32",
+  "allowed_ports": [
+    "1",
+    "1024"
+  ],
+  "status": "Running",
+  "recon": {},
+  "vuln": [],
+  "report": {},
+  "event": [
+    {
+      "timestamp": "2026-04-10T01:55:42.081352+00:00",
+      "agent": "orchestrator",
+      "event_message": "Target IP of (192.168.56.101) in scope of (192.168.56.101/32). Starting agent pipeline"
+    }
+  ]
+}

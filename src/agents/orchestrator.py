@@ -8,6 +8,7 @@ from langgraph.graph import StateGraph, END
 import json
 from src.core.state import log_event, log_error, AgentState
 from src.core.scope_guard import enforce_scope, ScopeViolationError
+from src.core.llm_client import call_llm, load_prompt
 # from src.agents.recon import recon_agent
 # from src.agents.vuln import vuln_agent
 # from src.agents.report import report_agent
@@ -22,16 +23,20 @@ def build_graph():
 
     # Create the different agent nodes
     graph.add_node('orchestrator', orchestrator_agent)
-    graph.add_node('recon', recon_agent)
-    graph.add_node('vuln_analyst', vuln_agent)
-    graph.add_node('report_writer', report_agent)
+    # graph.add_node('recon', recon_agent)
+    # graph.add_node('vuln_analyst', vuln_agent)
+    # graph.add_node('report_writer', report_agent)
+
+    # Commented code will be uncommented once other
+    # agents have been made and can be tested
 
     # Set pipeline order
     graph.set_entry_point('orchestrator')
-    graph.add_edge('orchestrator', 'recon')
-    graph.add_edge('recon', 'vuln_analyst')
-    graph.add_edge('vuln_analyst', 'report_writer')
-    graph.add_edge('report_writer', END)
+    graph.add_edge('orchestrator', END)
+    # graph.add_edge('orchestrator', 'recon')
+    # graph.add_edge('recon', 'vuln_analyst')
+    # graph.add_edge('vuln_analyst', 'report_writer')
+    # graph.add_edge('report_writer', END)
 
     return graph.compile()
 
@@ -41,7 +46,7 @@ def orchestrator_agent(state: AgentState) -> dict:
     scope and dispatches all other agents
     """
 
-    # Try to make a connection to the LLM log what happens
+    # Make sure that the given information is in scope
     try:
         enforce_scope(state['target_ip'], state['scope'])
     except ScopeViolationError as e:
@@ -49,6 +54,24 @@ def orchestrator_agent(state: AgentState) -> dict:
         error_update = log_error(state, 'orchestrator', str(e))
         return { **error_update, 'status': "Failed"}
     
+    # Use the LLM to do a secondary scope check
+    system_prompt = load_prompt("orchestrator_system.txt")
+    user_content = json.dumps({
+        "task": "You are too plan and validate the penetration test pipeline",
+        "target_ip": state['target_ip'],
+        "scope": state['scope'],
+        "allowed_ports": state['allowed_ports']
+    })
+
+    try:
+        response = call_llm(system_prompt, user_content, agent_name="orchestrator")
+
+        # Printing for test purposes. Will be removed later
+        print(f"\n[Orchestrator] Plan made and confirmed: {response}\n")
+
+    except Exception as e:
+        print(f"\n[Orchestrator] LLM call failed: {e}\n")
+
     # Log Event
     log_update = log_event(state, 'orchestrator', 
     f"Target IP of ({state['target_ip']}) in scope of ({state['scope']}). Starting agent pipeline")
@@ -61,5 +84,21 @@ def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, 
     to the end of the prompt if the llm returns invalid
     JSON. This will run until it uses all of its attempts
     """
+    retry_message = ""
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            result = call_llm(system_prompt, user_content + retry_message, agent_name=agent_name)
+            return result # successful call
+        except json.JSONDecodeError as e:
+            if attempt == max_attempts:
+                raise RuntimeError(f"{agent_name}, failed after {max_attempts} attempts")
+            retry_message = (
+                "\n\n--- Correction Required ---\n"
+                "Your previous response could not be parsed as valid JSON.\n"
+                "The ERROR was {e}\n"
+                "REQUIREMENT: Return ONLY VALID JSON. No Markdown. No Explanation. No Code Fences.\n"
+                "--- End of Correction ---"
+            )
 
     
