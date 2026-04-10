@@ -31,7 +31,7 @@ def get_llm_model():
 
     elif provider == "groq":
         return ChatGroq(
-            model="llama-3.3-70b-versitile",
+            model="llama-3.3-70b-versatile",
             api_key=os.getenv("GROQ_API_KEY"),
             max_tokens=1500
         )
