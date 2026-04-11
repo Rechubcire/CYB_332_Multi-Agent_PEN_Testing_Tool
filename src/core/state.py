@@ -118,9 +118,9 @@ def save_event_log(state: AgentState, path="output/run_events.log") -> None:
     """
     os.makedirs("output", exist_ok=True)
     with open(path, 'w') as file:
-        for entry in state['event']:
+        for entry in state.get('event', []):
             file.write(json.dumps(entry) + '\n')
-        for entry in state['error']:
+        for entry in state.get('error', []):
             file.write(json.dumps(entry) + '\n')
 
 def save_state_to_disk(state: AgentState, path="output/state.json") -> None:

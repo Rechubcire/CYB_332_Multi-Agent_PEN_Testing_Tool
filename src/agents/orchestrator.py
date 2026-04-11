@@ -59,17 +59,32 @@ def orchestrator_agent(state: AgentState) -> dict:
     Creates the Orchestrator agent node, which validates
     scope and dispatches all other agents
     """
+    # Event logging variables
+    updates = {}
+    current_state = state
+    agent = 'orchestrator'
+
+    # Use this to log all events. Same format for all agents
+    # Log: Orchestrator started
+    updates = {**updates, **log_event(current_state, agent, f"{agent.upper()} started.")}
+    current_state = {**state, **updates}
 
     # Make sure that the given information is in scope
     try:
         enforce_scope(state['target_ip'], state['scope'])
+
+        # Log: target IP in scope
+        updates = {**updates, **log_event(current_state, agent, f"Scope validation passed. {state['target_ip']} is in scope.")}
+        current_state = {**state, **updates}
+
     except ScopeViolationError as e:
-        # Log Error
-        error_update = log_error(state, 'orchestrator', str(e))
-        return { **error_update, 'status': "Failed"}
+
+        # Log: target IP out of scope
+        updates = {**updates, **log_error(state, agent, str(e))}
+        return { **updates, 'status': "Failed"}
     
     # Use the LLM to do a secondary scope check
-    system_prompt = load_prompt(state, 'orchestrator', "orchestrator_system.txt")
+    system_prompt = load_prompt("orchestrator_system.txt")
     user_content = json.dumps({
         "task": "You are too plan and validate the penetration test pipeline",
         "target_ip": state['target_ip'],
@@ -77,23 +92,35 @@ def orchestrator_agent(state: AgentState) -> dict:
         "allowed_ports": state['allowed_ports']
     })
 
-    try:
-        response = call_llm_with_retry(state, system_prompt, user_content, agent_name="orchestrator")
+    # Log: Call to LLM with input
+    updates = {**updates, **log_event(current_state, agent, f"Calling LLM. Input: {user_content}")}
+    current_state = {**state, **updates}
 
+    try:
+        response = call_llm_with_retry(system_prompt, user_content, agent_name=agent)
+
+        # Log: Successful LLM cal with output
+        updates = {**updates, **log_event(current_state, agent, f"Successful LLM call. Output: {response}")}
+        current_state = {**state, **updates}
         # Printing for test purposes. Will be removed later
         
         print(f"\n[Orchestrator] Plan made and confirmed: {response}\n")
 
     except Exception as e:
+
+        # Log: Error when calling the LLM with exception
+        updates = {**updates, **log_error(current_state, agent, f"Error occurred when calling the LLM. Error: {str(e)}")}
+        current_state = {**state, **updates}
         print(f"\n[Orchestrator] LLM call failed: {e}\n")
+        return {**updates, "status": "Failed"}
+        
 
     # Log Event
-    log_update = log_event(state, 'orchestrator', 
-    f"Target IP of ({state['target_ip']}) in scope of ({state['scope']}). Starting agent pipeline")
+    updates = {**updates, **log_event(current_state, agent, "Starting agent pipeline")}
     
-    return { **log_update, 'status': "Running"}
+    return { **updates, 'status': "Running"}
 
-def call_llm_with_retry(state: AgentState, system_prompt: str, user_content: str, agent_name: str, max_attempts=3) -> str:
+def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, max_attempts=3) -> str:
     """
     This uses call_llm() with retry logic. Adds a message
     to the end of the prompt if the llm returns invalid
@@ -103,7 +130,7 @@ def call_llm_with_retry(state: AgentState, system_prompt: str, user_content: str
 
     for attempt in range(1, max_attempts + 1):
         try:
-            result = call_llm(state, system_prompt, user_content + retry_message, agent_name=agent_name)
+            result = call_llm(system_prompt, user_content + retry_message, agent_name=agent_name)
             return result # successful call
         except json.JSONDecodeError as e:
             if attempt == max_attempts:
