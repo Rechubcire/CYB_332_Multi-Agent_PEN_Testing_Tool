@@ -102,6 +102,8 @@ def log_llm_call(agent_name: str, system_prompt: str, user_content: str, raw_tex
         "success": (not parsed == None)
     }
 
+
+    # Add to LLM Call log
     with open("output/run.log", "a") as file:
         file.write(json.dumps(entry) + "\n")
 

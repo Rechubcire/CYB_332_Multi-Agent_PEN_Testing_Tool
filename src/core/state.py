@@ -50,7 +50,7 @@ def initialise_state(target_ip: str, scope: str, allowed_ports: list) -> AgentSt
         vuln = [], # list of dict containing (id, port, service, severity, cve)
         report = {}, # executive_summary, scope_and_methodology, findings, risk_matrix, risk_rating_overall
 
-        errors = [], # list of dict containing (timestamp, agent, error_message)
+        error = [], # list of dict containing (timestamp, agent, error_message)
         event = [] # list of dict containing (timestamp, agent, event_message)
     )
 
@@ -111,6 +111,18 @@ def log_error(state: AgentState, agent:str, error_message: str) -> dict:
 
     return { "error": state["error"] + [error_entry]}    
 
+def save_event_log(state: AgentState, path="output/run_events.log") -> None:
+    """
+    Creates a log of all of the events and errors
+    This is then saved to help debugging
+    """
+    os.makedirs("output", exist_ok=True)
+    with open(path, 'w') as file:
+        for entry in state.get('event', []):
+            file.write(json.dumps(entry) + '\n')
+        for entry in state.get('error', []):
+            file.write(json.dumps(entry) + '\n')
+
 def save_state_to_disk(state: AgentState, path="output/state.json") -> None:
     """
     Check to see if a state file exist, if not create it
@@ -126,6 +138,8 @@ def save_state_to_disk(state: AgentState, path="output/state.json") -> None:
         json_string = json.dumps(state, indent=2, default=str)
 
         file.write(json_string)
+    
+    save_event_log(state)
 
 
     
