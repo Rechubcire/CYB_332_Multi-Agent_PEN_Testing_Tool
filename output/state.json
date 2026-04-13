@@ -1,6 +1,6 @@
 {
-  "session_id": "bf785219-f394-419d-856a-e376453dfaa0",
-  "timestamp": "2026-04-11T19:46:53.667735+00:00",
+  "session_id": "cea7d031-c6b5-40c0-b6bc-8562aedc6749",
+  "timestamp": "2026-04-13T18:15:22.281119+00:00",
   "target_ip": "192.168.56.101",
   "scope": "192.168.56.101/32",
   "allowed_ports": [
@@ -14,29 +14,29 @@
   "error": [],
   "event": [
     {
-      "timestamp": "2026-04-11T19:46:53.677473+00:00",
+      "timestamp": "2026-04-13T18:15:22.343507+00:00",
       "agent": "orchestrator",
       "event_message": "ORCHESTRATOR started."
     },
     {
-      "timestamp": "2026-04-11T19:46:53.677532+00:00",
+      "timestamp": "2026-04-13T18:15:22.343566+00:00",
       "agent": "orchestrator",
       "event_message": "Scope validation passed. 192.168.56.101 is in scope."
     },
     {
-      "timestamp": "2026-04-11T19:46:53.677830+00:00",
+      "timestamp": "2026-04-13T18:15:22.361113+00:00",
       "agent": "orchestrator",
       "event_message": "Calling LLM. Input: {\"task\": \"You are too plan and validate the penetration test pipeline\", \"target_ip\": \"192.168.56.101\", \"scope\": \"192.168.56.101/32\", \"allowed_ports\": [\"1\", \"200\"]}"
     },
     {
-      "timestamp": "2026-04-11T19:46:55.871152+00:00",
+      "timestamp": "2026-04-13T18:15:24.366284+00:00",
       "agent": "orchestrator",
-      "event_message": "Successful LLM call. Output: {'approved': True, 'target_ip': '192.168.56.101', 'scope': '192.168.56.101/32', 'allowed_ports': '1-200', 'pipeline': ['recon', 'vuln_analyst', 'report_writer'], 'message': 'Test validated and approved within scope'}"
+      "event_message": "Successful LLM call. Output: {'approved': True, 'target_ip': '192.168.56.101', 'scope': '192.168.56.101/32', 'allowed_ports': '1-200', 'pipeline': ['recon', 'vuln_analyst', 'report_writer'], 'message': 'Test approved within scope'}"
     },
     {
-      "timestamp": "2026-04-11T19:46:55.872881+00:00",
+      "timestamp": "2026-04-13T18:15:24.366930+00:00",
       "agent": "orchestrator",
       "event_message": "Starting agent pipeline"
     }
   ]
-}
+}   
