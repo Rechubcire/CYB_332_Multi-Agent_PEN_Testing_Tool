@@ -7,7 +7,7 @@ import subprocess
 
 def run_nmap(target_ip: str, ports: str = "1-65535") -> str:
     """
-    Runs nmap service/version scan against target.
+    Runs nmap scan against target.
     Returns raw nmap output as a string.
     """
     try:
