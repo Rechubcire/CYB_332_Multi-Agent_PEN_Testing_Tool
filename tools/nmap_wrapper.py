@@ -11,13 +11,14 @@ def run_nmap(target_ip: str, ports: str = "1-65535") -> str:
     Returns raw nmap output as a string.
     """
     try:
-        result = subprocess.run(
-            ["nmap", "-sV", "-sC", "--open", "-p", ports, target_ip],
-            capture_output=True,
-            text=True,
-            timeout=120
-        )
-        return result.stdout if result.stdout else result.stderr
+        result = subprocess.run(["nmap", "-sV", "-sC", "--open", "-p", ports, target_ip], 
+                                capture_output=True,
+                                text=True,
+                                timeout=120)
+        if result.stdout:
+            return result.stdout
+        else:
+            return result.stderr
     except subprocess.TimeoutExpired:
         return "ERROR: nmap scan timed out"
     except FileNotFoundError:
