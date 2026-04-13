@@ -24,4 +24,4 @@ def run_nmap(target_ip: str, ports: str = "1-65535") -> str:
     except FileNotFoundError:
         return "ERROR: nmap is not installed or not in PATH"
     except Exception as e:
-        return f"ERROR: {str(e)}"
+        return f"ERROR: {e}"
