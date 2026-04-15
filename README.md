@@ -21,7 +21,7 @@
 
 <ul>
   <li><strong>Language:</strong> Python 3.10+</li>
-  <li><strong>LLM Integration:</strong> Abthropic Claude API </li>
+  <li><strong>LLM Integration:</strong> Anthropic Claude API </li>
   <li><strong>Targeted Environment:</strong> Metasploitable 2</li>
   <li><strong>State Management:</strong> JSON-based shared memory</li>
 </ul>
@@ -44,29 +44,29 @@
     │   │   ├── recon.py               # Tool wrappers and information gathering
     │   │   ├── vuln_analyst.py        # CVE mapping and vulnerability analysis
     │   │   └── report_writer.py       # Pentest report generator
-    │   ├── core/
-    │   │   ├── state.py               # JSON state handler
-    │   │   ├── llm_client.py          # Claude/LLM integration
-    │   │   └── scope_guard.py         # Scope validation and enforcement
-    │   └── main.py                    # Entry point and main interface
+    │   └── core/
+    │       ├── state.py               # JSON state handler
+    │       ├── llm_client.py          # Claude/LLM integration
+    │       └── scope_guard.py         # Scope validation and enforcement
+    │ 
     ├── tools/
     │   ├── nmap_wrapper.py            # nmap subprocess wrapper
     │   ├── gobuster_wrapper.py        # gobuster subprocess wrapper
     │   ├── curl_wrapper.py            # curl HTTP header grabber
     │   └── whois_wrapper.py           # whois lookup wrapper
     ├── prompts/
-    │   ├── orchestrator_system.txt    # System prompt for Agent 1
-    │   ├── recon_system.txt           # System prompt for Agent 2
-    │   ├── vuln_analyst_system.txt    # System prompt for Agent 3
-    │   └── report_writer_system.txt   # System prompt for Agent 4
-    ├── tests/
-    │   ├── test_scope_guard.py        
-    │   └── test_state_schema.py       
+    │   ├── orchestrator_system.txt    
+    │   ├── recon_system.txt           
+    │   ├── vuln_analyst_system.txt    
+    │   └── report_writer_system.txt   
+    ├── tests/        
+    │   └── test_scope_guard.py       
     ├── output/                        # Created at runtime — add to .gitignore
     │   ├── state.json                 # Full state object from completed run
     │   ├── report.txt                 # Human-readable pentest report
+    |   ├── run_events.log             # All events, including errors and regular events
     │   └── run.log                    # All LLM calls and tool outputs
-    ├── docs/                          # Architecture diagrams and documents
+    ├── main.py                        # Entry point and main interface
     ├── .env.example                   # Template for API keys and env variables
     ├── .gitignore                     # Must include .env and output/
     ├── requirements.txt               # Python dependencies
