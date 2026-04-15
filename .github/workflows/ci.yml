@@ -31,5 +31,5 @@ jobs:
       - name: Check formatting (optional)
         run: |
           pip install flake8
-          flake8 . --count --exclude=.venv,__pycache__, __init__.py, conftest.py
+          flake8 . --count --exclude=.venv,__pycache__
           flake8 . --count --exit-zero --max-line-width=127

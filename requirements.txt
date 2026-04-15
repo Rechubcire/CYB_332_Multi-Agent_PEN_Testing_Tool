@@ -1,5 +1,5 @@
 anthropic>=0.89.0
-groq
+groq>= 0.37.1
 python-dotenv>=1.2.2
 python-nmap>=0.7.1
 jsonschema>=4.26.0
