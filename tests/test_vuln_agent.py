@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Standalone test for vuln_agent without needing recon_agent or full graph.
-This allows you to test the Vulnerability Analyst agent in isolation.
-"""
+"""Standalone test for vuln_agent without needing recon_agent or full graph."""
 
 import json
 import os
@@ -10,9 +7,9 @@ import sys
 from dotenv import load_dotenv
 
 
-
+# Change to root directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(script_dir, ".."))  # Go up one level from tests/
+project_root = os.path.abspath(os.path.join(script_dir, ".."))
 
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
