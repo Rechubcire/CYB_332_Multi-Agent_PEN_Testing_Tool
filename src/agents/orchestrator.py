@@ -12,8 +12,8 @@ from src.core.state import log_event, log_error, AgentState
 from src.core.scope_guard import enforce_scope, ScopeViolationError
 from src.core.llm_client import call_llm, load_prompt
 # from src.agents.recon import recon_agent
-# from src.agents.vuln import vuln_agent
-# from src.agents.report import report_agent
+from src.agents.vuln import vuln_agent
+from src.agents.report import report_agent
 
 def build_graph():
     """
@@ -26,19 +26,19 @@ def build_graph():
     # Create the different agent nodes
     workflow.add_node('orchestrator', orchestrator_agent)
     # graph.add_node('recon', recon_agent)
-    # graph.add_node('vuln_analyst', vuln_agent)
-    # graph.add_node('report_writer', report_agent)
+    graph.add_node('vuln_analyst', vuln_agent)
+    graph.add_node('report_writer', report_agent)
 
     # Commented code will be uncommented once other
     # agents have been made and can be tested
 
     # Set pipeline order
     workflow.set_entry_point('orchestrator')
-    workflow.add_edge('orchestrator', END)
+    workflow.add_edge('orchestrator', 'vuln_analyst')
     # workflow.add_edge('orchestrator', 'recon')
     # workflow.add_edge('recon', 'vuln_analyst')
-    # workflow.add_edge('vuln_analyst', 'report_writer')
-    # workflow.add_edge('report_writer', END)
+    workflow.add_edge('vuln_analyst', 'report_writer')
+    workflow.add_edge('report_writer', END)
 
     # Compile the workflow into a graph
     graph = workflow.compile()
