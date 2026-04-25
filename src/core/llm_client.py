@@ -83,6 +83,30 @@ def call_llm(system_prompt: str, user_content: str, agent_name="unknown") -> str
 
     return parsed
 
+def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, max_attempts=3) -> str:
+    """
+    This uses call_llm() with retry logic. Adds a message
+    to the end of the prompt if the llm returns invalid
+    JSON. This will run until it uses all of its attempts
+    """
+    retry_message = ""
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            result = call_llm(system_prompt, user_content + retry_message, agent_name=agent_name)
+            return result # successful call
+        except json.JSONDecodeError as e:
+            if attempt == max_attempts:
+                raise RuntimeError(f"{agent_name}, failed after {max_attempts} attempts")
+            retry_message = (
+                "\n\n--- Correction Required ---\n"
+                "Your previous response could not be parsed as valid JSON.\n"
+                "The ERROR was {e}\n"
+                "REQUIREMENT: Return ONLY VALID JSON. No Markdown. No Explanation. No Code Fences.\n"
+                "--- End of Correction ---"
+            )
+
+
 def log_llm_call(agent_name: str, system_prompt: str, user_content: str, raw_text: str, parsed: str) -> None:
     """
     Appends the returned JSON output from the LLM

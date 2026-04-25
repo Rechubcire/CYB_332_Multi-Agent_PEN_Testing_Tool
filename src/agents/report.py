@@ -1,65 +1,43 @@
 import json
-import logging
 from typing import Any
 
-from src.core.llm_client import call_llm, load_prompt
-from src.core.state import PentestState, log_event, log_error
+from src.core.llm_client import call_llm_with_retry, load_prompt
+from src.core.state import AgentState, log_event, log_error, write_report
 
-# Module-level logger — entries appear in output/run.log via the root handler
-logger = logging.getLogger(__name__)
 
 
 # Public node function — registered in build_graph() as 'report_writer'
 
-def report_agent(state: PentestState) -> dict:
+def report_agent(state: AgentState) -> dict:
     """
     LangGraph node function — Node 4 of 4.
-
-    Receives:
-        state['vulnerabilities'] — list written by vuln_node (Node 3)
-        state['recon']           — dict written by recon_node (Node 2)
-        state meta fields        — target_ip, scope, allowed_ports, session_id, timestamp
-
-    Returns:
-        Partial state dict that LangGraph merges automatically:
-        {
-            'report':  <structured report dict>,
-            'status':  'complete',
-            'logs':    <updated log list>
-        }
-
-    On failure returns:
-        {
-            'status': 'failed',
-            'errors': <updated error list>
-        }
     """
-    vulns = state.get("vulnerabilities", [])
+    updates = {}
+    current_state = state
+    agent = "report_writer"
+    vulns = state.get("vuln", [])
     recon = state.get("recon", {})
 
-    # ── Log the start of this node
-    log_update = log_event(
-        state,
-        "report_writer",
-        f"Writing report for {len(vulns)} finding(s) against {state['target_ip']}",
-    )
+    # Log the start of this node
+    updates = {**updates, **log_event(current_state, agent, f"{agent} starting")}
+    current_state = {**state, **updates}
+
+    # Extra log info from starting of agent
+    updates ={**updates, **log_event(current_state, agent, f"Writing a report on {len(vulns)} finding(s) against {state['target_ip']}.")} 
+    current_state = {**state, **updates}
 
     # Pre-compute risk matrix so the LLM does not have to count
     risk_counts = _count_severities(vulns)
     overall_risk = _determine_overall_risk(risk_counts)
-
-    logger.info(
-        "report_writer | risk_matrix=%s | overall_risk=%s",
-        risk_counts,
-        overall_risk,
-    )
 
     # Pull safe defaults from recon (fields may be absent if recon failed)
     scan_time = recon.get("scan_time") or state.get("timestamp", "unknown")
     os_guess  = (recon.get("os_detection") or {}).get("guess", "unknown")
     web_paths = recon.get("web_paths", [])
 
-    # Build the LLM user prompt
+    # Gather the system and user prompt
+    system_prompt = load_prompt("report_writer_system.txt")
+
     user_content = (
         "Write a complete, professional penetration test report\n"
         "based on the data below. Follow the report schema in your system prompt.\n\n"
@@ -78,39 +56,27 @@ def report_agent(state: PentestState) -> dict:
         + str(web_paths)
         + "\n\nReturn ONLY the report JSON object. No markdown. No explanation."
     )
-
-    # Load the system prompt from prompts/report_writer_system.txt
-    try:
-        system_prompt = load_prompt("report_writer_system.txt")
-    except FileNotFoundError as exc:
-        err = f"report_writer | system prompt not found: {exc}"
-        logger.error(err)
-        error_update = log_error(state, "report_writer", err)
-        return {**log_update, **error_update, "status": "failed"}
-
+    
+    updates = {**updates, **log_event(current_state, agent, f"Calling LLM to create JSON report data. Input: {user_content}")}
+    current_state = {**state, **updates}
     # Call the LLM with retry logic (max 3 attempts)
     try:
-        report_data = _call_llm_with_retry(
-            system_prompt=system_prompt,
-            user_content=user_content,
-            agent_name="report_writer",
-            max_tokens=4000,   # report nodes need more tokens than other agents
-            max_attempts=3,
-        )
-    except RuntimeError as exc:
-        err = f"report_writer | LLM failed after retries: {exc}"
-        logger.error(err)
-        error_update = log_error(state, "report_writer", err)
-        return {**log_update, **error_update, "status": "failed"}
+        report_data = call_llm_with_retry(system_prompt, user_content, "report_writer")
+        
+        updates = {**updates, **log_event(current_state, agent, f"Successful LLM call. Report Data Output: {report_data}")}
+        current_state = {**state, **updates}
+    except Exception as e:
+        updates = {**updates, **log_error(current_state, agent, f"Error occurred when calling the LLM. Error: {str(e)}")}
+        current_state = {**state, **updates}
+
+        return {**updates, "status": "Failed"}
 
     # Validate the top-level response shape
     if not isinstance(report_data, dict):
-        err = (
-            f"report_writer | LLM returned {type(report_data).__name__}, expected dict."
-        )
-        logger.error(err)
-        error_update = log_error(state, "report_writer", err)
-        return {**log_update, **error_update, "status": "failed"}
+        updates = {**updates, **log_error(current_state, agent, f"report_writer | LLM returned {type(report_data).__name__}, expected dict.")}
+        current_state = {**state, **updates}
+
+        return {**updates, "status": "failed"}
 
     # Enforce computed values — do NOT trust the LLM's own counts
     report_data["risk_matrix"]        = risk_counts
@@ -124,80 +90,13 @@ def report_agent(state: PentestState) -> dict:
     # Ensure all required fields exist (default to empty string if absent)
     _apply_required_defaults(report_data)
 
-    logger.info("report_writer | report JSON assembled successfully")
+    updates = {**updates, **write_report(state, report_data)}
 
     # Return partial state update — LangGraph merges automatically
-    return {
-        **log_update,
-        "report": report_data,
-        "status": "complete",
-    }
+    return {**updates, "status": "complete",}
 
 
 # Private helpers
-
-def _call_llm_with_retry(
-    system_prompt: str,
-    user_content: str,
-    agent_name: str,
-    max_tokens: int = 4000,
-    max_attempts: int = 3,
-) -> Any:
-    """
-    Wraps call_llm() with retry logic.
-
-    If the LLM returns malformed JSON, a corrective message is appended to the
-    user content and the call is retried.  After max_attempts failures a
-    RuntimeError is raised so report_node() can log and return a failed state.
-
-    Args:
-        system_prompt: The system-role prompt loaded from prompts/
-        user_content:  The user-role message containing all recon + vuln data
-        agent_name:    Label used for run.log entries
-        max_tokens:    Override passed through to call_llm(); report node needs 4000
-        max_attempts:  Number of retry attempts before giving up
-
-    Returns:
-        Parsed Python object (dict expected by report_node)
-
-    Raises:
-        RuntimeError: If all attempts fail
-    """
-    corrective_suffix = ""
-
-    for attempt in range(1, max_attempts + 1):
-        try:
-            result = call_llm(
-                system_prompt=system_prompt,
-                user_content=user_content + corrective_suffix,
-                max_tokens=max_tokens,
-                agent_name=agent_name,
-            )
-            return result  # success — exit immediately
-
-        except json.JSONDecodeError as exc:
-            logger.warning(
-                "report_writer | attempt %d/%d failed — JSON decode error: %s",
-                attempt,
-                max_attempts,
-                exc,
-            )
-            if attempt == max_attempts:
-                raise RuntimeError(
-                    f"{agent_name} failed after {max_attempts} attempts. "
-                    f"Last JSON error: {exc}"
-                ) from exc
-
-            # Build a corrective prompt to append on the next attempt
-            corrective_suffix = (
-                "\n\n--- CORRECTION REQUIRED ---\n"
-                "Your previous response could not be parsed as valid JSON.\n"
-                f"The error was: {exc}\n"
-                "Return ONLY valid JSON. No markdown. No explanation. "
-                "No code fences. No text before or after the JSON object.\n"
-                "--- END CORRECTION ---"
-            )
-
 
 def _count_severities(vuln_list: list) -> dict:
     """
