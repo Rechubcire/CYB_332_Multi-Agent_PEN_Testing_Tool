@@ -8,7 +8,7 @@ from src.core.scope_guard import enforce_scope
 
 def run_nmap(target_ip: str, port_range: str, scope: str) -> str:
     """
-    Runs nmap service/version scan against target.
+    Runs nmap scan against target.
     Returns raw nmap output as a string.
     """
     enforce_scope(target_ip, scope)
