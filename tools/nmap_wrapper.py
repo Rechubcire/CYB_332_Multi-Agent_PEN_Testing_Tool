@@ -4,23 +4,28 @@ the raw output as a string for LLM parsing
 """
 
 import subprocess
+from src.core.scope_guard import enforce_scope
 
-def run_nmap(target_ip: str, ports: str = "1-65535") -> str:
+def run_nmap(target_ip: str, port_range: str, scope: str) -> str:
     """
     Runs nmap service/version scan against target.
     Returns raw nmap output as a string.
     """
+    enforce_scope(target_ip, scope)
+
     try:
         result = subprocess.run(
-            ["nmap", "-sV", "-sC", "--open", "-p", ports, target_ip],
+            ["nmap", "-sV", "-O", "-sC", "--open", "-p", port_range, "-oX", "-", target_ip],
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=300
         )
-        return result.stdout if result.stdout else result.stderr
+        if result.returncode >= 2:
+            raise RuntimeError(f"nmap failed with code {result.returncode}: {result.stderr[:300]}")
+        if not result.stdout:
+            raise RuntimeError("nmap produced no output")
+        return result.stdout
     except subprocess.TimeoutExpired:
-        return "ERROR: nmap scan timed out"
+        raise RuntimeError("nmap timed out after 300 seconds")
     except FileNotFoundError:
-        return "ERROR: nmap is not installed or not in PATH"
-    except Exception as e:
-        return f"ERROR: {str(e)}"
+        raise RuntimeError("nmap is not installed or not in PATH")
