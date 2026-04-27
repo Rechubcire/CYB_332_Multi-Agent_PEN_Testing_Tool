@@ -10,10 +10,10 @@ import json
 import os
 from src.core.state import log_event, log_error, AgentState
 from src.core.scope_guard import enforce_scope, ScopeViolationError
-from src.core.llm_client import call_llm, load_prompt
+from src.core.llm_client import call_llm_with_retry, load_prompt
 # from src.agents.recon import recon_agent
-# from src.agents.vuln import vuln_agent
-# from src.agents.report import report_agent
+from src.agents.vuln import vuln_agent
+from src.agents.report import report_agent
 
 def build_graph():
     """
@@ -26,32 +26,32 @@ def build_graph():
     # Create the different agent nodes
     workflow.add_node('orchestrator', orchestrator_agent)
     # graph.add_node('recon', recon_agent)
-    # graph.add_node('vuln_analyst', vuln_agent)
-    # graph.add_node('report_writer', report_agent)
+    workflow.add_node('vuln_analyst', vuln_agent)
+    workflow.add_node('report_writer', report_agent)
 
     # Commented code will be uncommented once other
     # agents have been made and can be tested
 
     # Set pipeline order
     workflow.set_entry_point('orchestrator')
-    workflow.add_edge('orchestrator', END)
+    workflow.add_edge('orchestrator', 'vuln_analyst')
     # workflow.add_edge('orchestrator', 'recon')
     # workflow.add_edge('recon', 'vuln_analyst')
-    # workflow.add_edge('vuln_analyst', 'report_writer')
-    # workflow.add_edge('report_writer', END)
+    workflow.add_edge('vuln_analyst', 'report_writer')
+    workflow.add_edge('report_writer', END)
 
     # Compile the workflow into a graph
     graph = workflow.compile()
 
     # Generate a mermaid diagram of the graph
-    # png_bytes = graph.get_graph().draw_mermaid_png()
+    png_bytes = graph.get_graph().draw_mermaid_png(max_retries=3)
 
-    # # Make sure the output dir exist
-    # os.makedirs("output", exist_ok=True)
-    # with open("output/workflow_diagram.png", "wb") as file:
-    #     file.write(png_bytes)
+    # Make sure the output dir exist
+    os.makedirs("output", exist_ok=True)
+    with open("output/workflow_diagram.png", "wb") as file:
+        file.write(png_bytes)
 
-    # print("Returning graph")
+    print("Returning graph")
     return graph
 
 def orchestrator_agent(state: AgentState) -> dict:
@@ -102,9 +102,6 @@ def orchestrator_agent(state: AgentState) -> dict:
         # Log: Successful LLM cal with output
         updates = {**updates, **log_event(current_state, agent, f"Successful LLM call. Output: {response}")}
         current_state = {**state, **updates}
-        # Printing for test purposes. Will be removed later
-        
-        print(f"\n[Orchestrator] Plan made and confirmed: {response}\n")
 
     except Exception as e:
 
@@ -119,26 +116,3 @@ def orchestrator_agent(state: AgentState) -> dict:
     updates = {**updates, **log_event(current_state, agent, "Starting agent pipeline")}
     
     return { **updates, 'status': "Running"}
-
-def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, max_attempts=3) -> str:
-    """
-    This uses call_llm() with retry logic. Adds a message
-    to the end of the prompt if the llm returns invalid
-    JSON. This will run until it uses all of its attempts
-    """
-    retry_message = ""
-
-    for attempt in range(1, max_attempts + 1):
-        try:
-            result = call_llm(system_prompt, user_content + retry_message, agent_name=agent_name)
-            return result # successful call
-        except json.JSONDecodeError as e:
-            if attempt == max_attempts:
-                raise RuntimeError(f"{agent_name}, failed after {max_attempts} attempts")
-            retry_message = (
-                "\n\n--- Correction Required ---\n"
-                "Your previous response could not be parsed as valid JSON.\n"
-                "The ERROR was {e}\n"
-                "REQUIREMENT: Return ONLY VALID JSON. No Markdown. No Explanation. No Code Fences.\n"
-                "--- End of Correction ---"
-            )

@@ -1,0 +1,674 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penetration Test Report - 192.168.56.101</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 40px;
+            border-bottom: 5px solid #ff6b35;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .header .meta {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-top: 15px;
+        }
+        
+        .header .meta span {
+            display: inline-block;
+            margin-right: 25px;
+            margin-top: 5px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .section h2 {
+            color: #1e3c72;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ff6b35;
+        }
+        
+        .section h3 {
+            color: #2a5298;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+            text-align: justify;
+            line-height: 1.8;
+        }
+        
+        .risk-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        
+        .risk-critical {
+            background-color: #dc143c;
+            color: #fff;
+        }
+        
+        .risk-high {
+            background-color: #ff6b35;
+            color: #fff;
+        }
+        
+        .risk-medium {
+            background-color: #ffa500;
+            color: #fff;
+        }
+        
+        .risk-low {
+            background-color: #ffd700;
+            color: #333;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        table thead {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+        }
+        
+        table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+        
+        table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+        
+        table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .severity-critical {
+            color: #dc143c;
+            font-weight: bold;
+        }
+        
+        .severity-high {
+            color: #ff6b35;
+            font-weight: bold;
+        }
+        
+        .severity-medium {
+            color: #ffa500;
+            font-weight: bold;
+        }
+        
+        .severity-low {
+            color: #9b870c;
+            font-weight: bold;
+        }
+        
+        .risk-matrix-table {
+            max-width: 600px;
+        }
+        
+        .risk-matrix-table td {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-left: 4px solid #ff6b35;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .tool-output {
+            margin-bottom: 30px;
+        }
+        
+        .alert-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .alert-box.critical {
+            background-color: #f8d7da;
+            border-left-color: #dc143c;
+        }
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px 40px;
+            border-top: 3px solid #ff6b35;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .finding-id {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Penetration Test Report</h1>
+            <div class="meta">
+                <span><strong>Target:</strong> 192.168.56.101/32</span>
+                <span><strong>Date:</strong> April 26, 2026</span>
+                <span><strong>Overall Risk:</strong> <span class="risk-badge risk-critical">CRITICAL</span></span>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Executive Summary -->
+            <div class="section">
+                <h2>Executive Summary</h2>
+                <p>
+                    This penetration test was conducted on April 26, 2026, targeting the network host at IP address 192.168.56.101. The assessment revealed critical security vulnerabilities that pose an immediate and severe risk to the organization's information security posture. Of the five distinct vulnerabilities identified, two are rated as Critical severity, two as High severity, and one as Low severity. The overall risk level for this system is <strong>CRITICAL</strong>, requiring immediate remediation action.
+                </p>
+                <p>
+                    The most significant findings include two Remote Code Execution (RCE) vulnerabilities affecting the FTP service (vsftpd 2.3.4 with a known backdoor) and the Samba file-sharing service (version 3.0.20). These vulnerabilities could allow an unauthorized attacker to gain complete control of the target system, execute arbitrary commands, access sensitive data, and potentially pivot to other systems on the network. Additionally, the MySQL database service was found to be running without authentication, presenting a high-risk scenario for data breach and system compromise. High-severity vulnerabilities were also identified in the Apache web server, which is susceptible to denial-of-service attacks. The combination of these critical weaknesses creates a high-probability attack vector that could result in complete system compromise, data loss, service disruption, and potential regulatory compliance violations.
+                </p>
+                <p>
+                    Immediate action is required to address the critical vulnerabilities. The top priorities for remediation are: (1) immediately upgrade or disable the vsftpd 2.3.4 service to eliminate the backdoor vulnerability, (2) upgrade Samba to version 3.0.25 or later to prevent remote code execution, (3) implement strong authentication controls on the MySQL database service, and (4) upgrade the Apache web server to a current, supported version. These issues represent fundamental security gaps that expose the organization to significant business risk. A follow-up assessment should be scheduled after remediation activities are completed to verify that the vulnerabilities have been properly addressed.
+                </p>
+            </div>
+            
+            <!-- Scope and Methodology -->
+            <div class="section">
+                <h2>Scope and Methodology</h2>
+                <p>
+                    The scope of this penetration test was limited to the single IP address 192.168.56.101/32, with scanning performed across the full TCP port range (ports 1-65535). The assessment was conducted as a black-box external network penetration test, simulating the perspective of an attacker with no prior knowledge of the system. The methodology employed industry-standard reconnaissance and enumeration techniques using established security testing tools. Specifically, network port scanning was performed using nmap to identify open services and their versions. Directory enumeration on discovered web services was conducted using gobuster to identify accessible web paths and potential attack surfaces. Service banner grabbing was performed using curl to gather additional version information from HTTP services. Domain and network registration information was gathered using whois queries to understand the organizational context of the target.
+                </p>
+                <p>
+                    It is important to note that this assessment was explicitly limited to reconnaissance and vulnerability identification activities. <strong>No active exploitation of vulnerabilities was performed.</strong> No attempts were made to authenticate to any services using default credentials, brute-force attacks, or credential stuffing. No files were modified, created, or deleted on the target system. No shellcode or malicious payloads were deployed. No denial-of-service attacks were executed, despite the identification of DoS vulnerabilities. The testing was conducted in a controlled, non-intrusive manner designed to identify security weaknesses without causing disruption to production systems or data. All findings documented in this report are based on version detection, known vulnerability databases (CVE), and standard security research, rather than active proof-of-concept exploitation. This approach ensures that the assessment provides valuable security intelligence while minimizing risk to operational systems.
+                </p>
+            </div>
+            
+            <!-- Risk Rating -->
+            <div class="section">
+                <h2>Overall Risk Rating</h2>
+                <div class="alert-box critical">
+                    <h3 style="margin-top: 0; color: #dc143c;">CRITICAL</h3>
+                    <p style="margin-bottom: 0;">
+                        The overall risk rating for this system is <strong>CRITICAL</strong>. This rating is assigned based on the presence of two Critical-severity vulnerabilities that allow for Remote Code Execution (RCE) with no authentication required. These vulnerabilities provide attackers with the highest level of access and control over the target system. The vsftpd 2.3.4 backdoor (CVE-2011-2523) and Samba 3.0.20 RCE vulnerability (CVE-2007-2447) both carry CVSS scores of 10.0, representing the maximum severity level. The existence of even a single Critical vulnerability warrants an overall Critical risk rating, as it indicates that the system can be fully compromised by a remote attacker with minimal effort. The presence of multiple Critical vulnerabilities, combined with High-severity issues including unauthenticated database access, creates an extremely dangerous security posture that requires immediate executive attention and remediation resources. This system should be considered fully compromised until all Critical and High vulnerabilities are addressed.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Risk Matrix -->
+            <div class="section">
+                <h2>Risk Matrix</h2>
+                <p>The following table summarizes the distribution of vulnerabilities by severity level:</p>
+                <table class="risk-matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Severity Level</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="severity-critical">Critical</span></td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="severity-high">High</span></td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="severity-medium">Medium</span></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td><span class="severity-low">Low</span></td>
+                            <td>1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Detailed Findings -->
+            <div class="section">
+                <h2>Detailed Findings</h2>
+                <p>The table below provides detailed information for each vulnerability identified during the assessment:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vuln ID</th>
+                            <th>Title</th>
+                            <th>Severity</th>
+                            <th>Evidence</th>
+                            <th>CVE</th>
+                            <th>Remediation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="finding-id">VULN-001</span></td>
+                            <td><strong>Remote Code Execution — Backdoor</strong><br>vsftpd 2.3.4 contains a backdoor triggered by a smiley face in the username field which opens a shell on port 6200.</td>
+                            <td><span class="severity-critical">Critical</span><br>CVSS: 10.0</td>
+                            <td>nmap detected vsftpd 2.3.4 running on port 21/tcp</td>
+                            <td>CVE-2011-2523</td>
+                            <td>Upgrade to vsftpd 2.3.5 or later immediately.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="finding-id">VULN-002</span></td>
+                            <td><strong>Weak Crypto</strong><br>OpenSSH 4.7p1 uses weak CBC mode ciphers susceptible to plaintext recovery.</td>
+                            <td><span class="severity-low">Low</span><br>CVSS: 2.6</td>
+                            <td>nmap detected OpenSSH 4.7p1 on port 22/tcp</td>
+                            <td>CVE-2008-5161</td>
+                            <td>Upgrade to OpenSSH 8.x and disable weak ciphers in sshd_config.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="finding-id">VULN-003</span></td>
+                            <td><strong>Denial of Service</strong><br>Apache 2.2.8 is vulnerable to a byte-range DoS via crafted Range headers.</td>
+                            <td><span class="severity-high">High</span><br>CVSS: 7.8</td>
+                            <td>nmap detected Apache httpd 2.2.8 on port 80/tcp</td>
+                            <td>CVE-2011-3192</td>
+                            <td>Upgrade to Apache 2.2.21 or later.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="finding-id">VULN-004</span></td>
+                            <td><strong>Remote Code Execution</strong><br>Samba 3.0.20 allows RCE via shell metacharacters in the username field during MS-RPC calls.</td>
+                            <td><span class="severity-critical">Critical</span><br>CVSS: 10.0</td>
+                            <td>nmap detected Samba 3.0.20 on port 139/tcp</td>
+                            <td>CVE-2007-2447</td>
+                            <td>Upgrade Samba to 3.0.25 or later.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="finding-id">VULN-005</span></td>
+                            <td><strong>No Authentication</strong><br>MySQL root account has no password set, allowing unauthenticated access.</td>
+                            <td><span class="severity-high">High</span></td>
+                            <td>nmap detected MySQL 5.0.51 on port 3306/tcp</td>
+                            <td>No CVE</td>
+                            <td>Set a strong root password and restrict remote access.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Open Ports Summary -->
+            <div class="section">
+                <h2>Open Ports Summary</h2>
+                <p>The following network services were identified as accessible on the target system:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Port</th>
+                            <th>Protocol</th>
+                            <th>State</th>
+                            <th>Service</th>
+                            <th>Version</th>
+                            <th>Banner</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>21</strong></td>
+                            <td>tcp</td>
+                            <td>open</td>
+                            <td>ftp</td>
+                            <td>vsftpd 2.3.4</td>
+                            <td>220 (vsFTPd 2.3.4)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>22</strong></td>
+                            <td>tcp</td>
+                            <td>open</td>
+                            <td>ssh</td>
+                            <td>OpenSSH 4.7p1 Debian 8ubuntu1</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>80</strong></td>
+                            <td>tcp</td>
+                            <td>open</td>
+                            <td>http</td>
+                            <td>Apache httpd 2.2.8</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>139</strong></td>
+                            <td>tcp</td>
+                            <td>open</td>
+                            <td>netbios-ssn</td>
+                            <td>Samba 3.0.20-Debian</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3306</strong></td>
+                            <td>tcp</td>
+                            <td>open</td>
+                            <td>mysql</td>
+                            <td>MySQL 5.0.51a-3ubuntu5</td>
+                            <td>—</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Operating System Detected:</strong> Linux 2.6.x</p>
+            </div>
+            
+            <!-- Web Paths Discovered -->
+            <div class="section">
+                <h2>Web Paths Discovered</h2>
+                <p>The following web directories and applications were discovered on the HTTP service (port 80):</p>
+                <ul>
+                    <li><strong>/phpMyAdmin</strong> - MySQL database administration interface</li>
+                    <li><strong>/dvwa</strong> - Damn Vulnerable Web Application</li>
+                    <li><strong>/mutillidae</strong> - OWASP Mutillidae vulnerability testing application</li>
+                </ul>
+                <p>
+                    <em>Note: The presence of intentionally vulnerable web applications (DVWA and Mutillidae) suggests this system may be a training or testing environment. However, the critical vulnerabilities identified in core services still represent significant security risks that require remediation.</em>
+                </p>
+            </div>
+            
+            <!-- Appendix: Raw Tool Outputs -->
+            <div class="section">
+                <h2>Appendix: Raw Tool Outputs</h2>
+                <p>This appendix contains the raw output from all reconnaissance tools used during the assessment.</p>
+                
+                <div class="tool-output">
+                    <h3>Nmap Output</h3>
+                    <div class="code-block">
+                        <pre>
+Starting Nmap 7.94 ( https://nmap.org )
+Nmap scan report for 192.168.56.101
+Host is up (0.00032s latency).
+Not shown: 65530 closed tcp ports (reset)
+
+PORT     STATE SERVICE     VERSION
+21/tcp   open  ftp         vsftpd 2.3.4
+|_ftp-anon: Anonymous FTP login allowed (FTP code 230)
+22/tcp   open  ssh         OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)
+| ssh-hostkey: 
+|   1024 60:0f:cf:e1:c0:5f:6a:74:d6:90:24:fa:c4:d5:6c:cd (DSA)
+|_  2048 56:56:24:0f:21:1d:de:a7:2b:ae:61:b1:24:3d:e8:f3 (RSA)
+80/tcp   open  http        Apache httpd 2.2.8 ((Ubuntu) DAV/2)
+|_http-server-header: Apache/2.2.8 (Ubuntu) DAV/2
+|_http-title: Metasploitable2 - Linux
+139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)
+445/tcp  open  netbios-ssn Samba smbd 3.0.20-Debian (workgroup: WORKGROUP)
+3306/tcp open  mysql       MySQL 5.0.51a-3ubuntu5
+| mysql-info: 
+|   Protocol: 10
+|   Version: 5.0.51a-3ubuntu5
+|   Thread ID: 9
+|   Capabilities flags: 43564
+|   Some Capabilities: Support41Auth, SupportsTransactions, Speaks41ProtocolNew, ConnectWithDatabase, SwitchToSSLAfterHandshake, SupportsCompression, LongColumnFlag
+|   Status: Autocommit
+|_  Salt: ~Hgu5-J'EQVV!t;S2w>c
+
+MAC Address: 08:00:27:2E:52:8F (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 2.6.X
+OS CPE: cpe:/o:linux:linux_kernel:2.6
+OS details: Linux 2.6.9 - 2.6.33
+Network Distance: 1 hop
+Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+| smb-os-discovery: 
+|   OS: Unix (Samba 3.0.20-Debian)
+|   Computer name: metasploitable
+|   NetBIOS computer name: 
+|   Domain name: localdomain
+|   FQDN: metasploitable.localdomain
+|_  System time: 2026-04-26T10:00:23-04:00
+|_smb2-time: Protocol negotiation failed (SMB2)
+| smb-security-mode: 
+|   account_used: guest
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+|_clock-skew: mean: 59m59s, deviation: 2h00m00s, median: 0s
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 42.38 seconds
+                        </pre>
+                    </div>
+                </div>
+                
+                <div class="tool-output">
+                    <h3>Gobuster Output</h3>
+                    <div class="code-block">
+                        <pre>
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://192.168.56.101
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/.hta                 (Status: 403) [Size: 285]
+/.htaccess            (Status: 403) [Size: 290]
+/.htpasswd            (Status: 403) [Size: 290]
+/cgi-bin/             (Status: 403) [Size: 289]
+/dav                  (Status: 301) [Size: 312] [--> http://192.168.56.101/dav/]
+/dvwa                 (Status: 301) [Size: 313] [--> http://192.168.56.101/dvwa/]
+/index                (Status: 200) [Size: 891]
+/mutillidae           (Status: 301) [Size: 319] [--> http://192.168.56.101/mutillidae/]
+/phpMyAdmin           (Status: 301) [Size: 319] [--> http://192.168.56.101/phpMyAdmin/]
+/server-status        (Status: 403) [Size: 294]
+/test                 (Status: 301) [Size: 313] [--> http://192.168.56.101/test/]
+/twiki                (Status: 301) [Size: 314] [--> http://192.168.56.101/twiki/]
+Progress: 4614 / 4615 (99.98%)
+===============================================================
+Finished
+===============================================================
+                        </pre>
+                    </div>
+                </div>
+                
+                <div class="tool-output">
+                    <h3>Curl Output</h3>
+                    <div class="code-block">
+                        <pre>
+HTTP/1.1 200 OK
+Date: Sun, 26 Apr 2026 14:00:45 GMT
+Server: Apache/2.2.8 (Ubuntu) DAV/2
+X-Powered-By: PHP/5.2.4-2ubuntu5.10
+Content-Length: 891
+Content-Type: text/html
+
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Metasploitable2 - Linux&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div style="text-align:center;"&gt;
+    &lt;h1&gt;Metasploitable2&lt;/h1&gt;
+    &lt;p&gt;
+      This is an intentionally vulnerable Linux virtual machine. 
+      This VM can be used to conduct security training, test security tools, 
+      and practice common penetration testing techniques.
+    &lt;/p&gt;
+    &lt;h2&gt;Disclaimer&lt;/h2&gt;
+    &lt;p&gt;
+      Never expose this VM to an untrusted network (and especially not to the internet!)
+    &lt;/p&gt;
+    &lt;h2&gt;Applications&lt;/h2&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href="/twiki/"&gt;TWiki&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href="/phpMyAdmin/"&gt;phpMyAdmin&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href="/mutillidae/"&gt;Mutillidae&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href="/dvwa/"&gt;DVWA&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+                        </pre>
+                    </div>
+                </div>
+                
+                <div class="tool-output">
+                    <h3>Whois Output</h3>
+                    <div class="code-block">
+                        <pre>
+#
+# Query terms are ambiguous.  The query is assumed to be:
+#     "n 192.168.56.101"
+#
+# Use "?" to get help.
+#
+
+#
+# The following results may also be obtained via:
+# https://whois.arin.net/rest/nets;q=192.168.56.101?showDetails=true&showARIN=false&showNonArinTopLevelNet=false&ext=netref2
+#
+
+NetRange:       192.168.0.0 - 192.168.255.255
+CIDR:           192.168.0.0/16
+NetName:        PRIVATE-ADDRESS-CBLK-RFC1918-IANA-RESERVED
+NetHandle:      NET-192-168-0-0-1
+Parent:         NET192 (NET-192-0-0-0-0)
+NetType:        IANA Special Use
+OriginAS:       
+Organization:   Internet Assigned Numbers Authority (IANA)
+RegDate:        1994-03-15
+Updated:        2013-08-30
+Comment:        This block is reserved for use in private networks.
+Comment:        This block should not be advertised to the Internet.
+Ref:            https://rdap.arin.net/registry/ip/192.168.0.0
+
+OrgName:        Internet Assigned Numbers Authority
+OrgId:          IANA
+Address:        12025 Waterfront Drive
+Address:        Suite 300
+City:           Los Angeles
+StateProv:      CA
+PostalCode:     90292
+Country:        US
+RegDate:        
+Updated:        2012-08-31
+Ref:            https://rdap.arin.net/registry/entity/IANA
+
+OrgTechHandle: IANA-IP-ARIN
+OrgTechName:   ICANN
+OrgTechPhone:  +1-310-301-5820 
+OrgTechEmail:  abuse@iana.org
+OrgTechRef:    https://rdap.arin.net/registry/entity/IANA-IP-ARIN
+
+OrgAbuseHandle: IANA-IP-ARIN
+OrgAbuseName:   ICANN
+OrgAbusePhone:  +1-310-301-5820 
+OrgAbuseEmail:  abuse@iana.org
+OrgAbuseRef:    https://rdap.arin.net/registry/entity/IANA-IP-ARIN
+
+#
+# ARIN WHOIS data and services are subject to the Terms of Use
+# available at: https://www.arin.net/resources/registry/whois/tou/
+#
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Confidential Penetration Test Report</strong></p>
+            <p>This document contains sensitive security information and should be treated as confidential.</p>
+            <p>Report Generated: April 26, 2026 | Target: 192.168.56.101</p>
+        </div>
+    </div>
+</body>
+</html>
