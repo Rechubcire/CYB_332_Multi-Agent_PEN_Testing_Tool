@@ -22,7 +22,7 @@ class AgentState(TypedDict):
     # Model specific state info
     recon: Dict
     vuln: List
-    report: Dict
+    report: str
 
     # Logs
     error: List
@@ -48,7 +48,7 @@ def initialise_state(target_ip: str, scope: str, allowed_ports: list) -> AgentSt
 
         recon = {}, # scan_time, open_ports, os_detection, web_paths, whois_raw, nmap_raw
         vuln = [], # list of dict containing (id, port, service, severity, cve)
-        report = {}, # executive_summary, scope_and_methodology, findings, risk_matrix, risk_rating_overall
+        report = None, # html string of the report containing executive_summary, scope_and_methodology, findings, risk_matrix, risk_rating_overall
 
         error = [], # list of dict containing (timestamp, agent, error_message)
         event = [] # list of dict containing (timestamp, agent, event_message)
@@ -77,12 +77,12 @@ def write_vuln(state: AgentState, vulnerabilities: list) -> dict:
     """
     return { "vuln": vulnerabilities}
 
-def write_report(state: AgentState, report_data: dict) -> dict:
+def write_report(state: AgentState, report_html: str) -> dict:
     """
     Writes the output from agent 4 (report writer)
     to the JSON state
     """
-    return { "report": report_data}
+    return { "report": report_html}
 
 def log_event(state:dict, agent: str, message: str) -> dict:
     """
@@ -122,6 +122,16 @@ def save_event_log(state: AgentState, path="output/run_events.log") -> None:
             file.write(json.dumps(entry) + '\n')
         for entry in state.get('error', []):
             file.write(json.dumps(entry) + '\n')
+
+def save_report_to_disk(report_html: str, path="output/final_report.pdf") -> None:
+    """
+    Take the html code from the LLM output and 
+    convert it to a pdf and then write it to 
+    the predefined path.
+    """
+    from weasyprint import HTML
+
+    HTML(string=report_html).write_pdf(path)
 
 def save_state_to_disk(state: AgentState, path="output/state.json") -> None:
     """
@@ -190,15 +200,9 @@ def validate_section(state: AgentState, section: str) -> bool:
         return True
     
     elif section == "report":
-        if not isinstance(state["report"].get("executive_summary"), str):
+        if not isinstance(state["report"], str):
             return False
-        if not isinstance(state["report"].get("scope_and_methodology"), str):
-            return False
-        if not isinstance(state["report"].get("findings"), list):
-            return False
-        if not isinstance(state["report"].get("risk_matrix"), dict):
-            return False
-        if not isinstance(state["report"].get("risk_rating_overall"), str):
+        if not state["report"]:
             return False
         
         # All items are present and not empty

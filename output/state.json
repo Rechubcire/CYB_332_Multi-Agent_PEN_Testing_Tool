@@ -1,71 +1,73 @@
 {
-  "session_id": "453c4dd2-0704-4564-9497-01dbb6be575e",
-  "timestamp": "2026-04-25T18:43:33.493782+00:00",
+  "session_id": "b251e548-d04a-4e65-9607-93c45fb64b9b",
+  "timestamp": "2026-04-27T03:32:34.458709+00:00",
   "target_ip": "192.168.56.101",
   "scope": "192.168.56.101/32",
   "allowed_ports": [
     "1",
     "200"
   ],
-  "status": "complete",
+  "status": "Failed",
   "recon": {},
   "vuln": [],
-  "report": {
-    "executive_summary": "A penetration test was conducted on the target system 192.168.56.101/32 on April 25, 2026. The test did not identify any critical, high, medium, or low-risk vulnerabilities. The overall risk level of the system is classified as Info, indicating that no significant security issues were found. The test results suggest that the system is currently in a relatively secure state. However, it is essential to continue monitoring and maintaining the system to ensure its security posture remains strong. No critical findings or remediation priorities were identified during this test.",
-    "scope_and_methodology": "The penetration test was conducted on the target system 192.168.56.101/32, with a focus on scanning ports 1 through 200. The test did not include exploitation attempts, login attempts, file modification, or shellcode injection. The tools used during the test were not specified, but the results indicate that no significant vulnerabilities were identified. The test was limited to a non-intrusive scan, and no attempts were made to compromise the system's security.",
-    "findings": [],
-    "risk_matrix": {
-      "Critical": 0,
-      "High": 0,
-      "Medium": 0,
-      "Low": 0,
-      "Info": 0
-    },
-    "risk_rating_overall": "Info",
-    "raw_tool_outputs": "=== NMAP XML OUTPUT ===\n(nmap output not available)\n\n=== WEB PATHS DISCOVERED ===\n(no web paths discovered)\n\n=== WHOIS OUTPUT ===\n(whois output not available)"
-  },
+  "report": null,
   "error": [
     {
-      "timestamp": "2026-04-25T18:43:34.692174+00:00",
+      "timestamp": "2026-04-27T03:32:37.326417+00:00",
       "agent": "vuln_analyst",
       "error_message": "No reconnaissance data found. Cannot perform vulnerability analysis."
+    },
+    {
+      "timestamp": "2026-04-27T03:32:46.218457+00:00",
+      "agent": "report_writer",
+      "error_message": "Error occurred when calling the LLM. Error: report_writer, failed after 3 attempts"
     }
   ],
   "event": [
     {
-      "timestamp": "2026-04-25T18:43:33.779056+00:00",
+      "timestamp": "2026-04-27T03:32:35.330025+00:00",
       "agent": "orchestrator",
       "event_message": "ORCHESTRATOR started."
     },
     {
-      "timestamp": "2026-04-25T18:43:33.779098+00:00",
+      "timestamp": "2026-04-27T03:32:35.330130+00:00",
       "agent": "orchestrator",
       "event_message": "Scope validation passed. 192.168.56.101 is in scope."
     },
     {
-      "timestamp": "2026-04-25T18:43:33.779302+00:00",
+      "timestamp": "2026-04-27T03:32:35.352870+00:00",
       "agent": "orchestrator",
       "event_message": "Calling LLM. Input: {\"task\": \"You are too plan and validate the penetration test pipeline\", \"target_ip\": \"192.168.56.101\", \"scope\": \"192.168.56.101/32\", \"allowed_ports\": [\"1\", \"200\"]}"
     },
     {
-      "timestamp": "2026-04-25T18:43:34.691303+00:00",
+      "timestamp": "2026-04-27T03:32:37.324699+00:00",
       "agent": "orchestrator",
-      "event_message": "Successful LLM call. Output: {'approved': True, 'target_ip': '192.168.56.101', 'scope': '192.168.56.101/32', 'allowed_ports': '1-200', 'pipeline': ['recon', 'vuln_analyst', 'report_writer'], 'message': 'Penetration test pipeline approved within scope'}"
+      "event_message": "Successful LLM call. Output: {'approved': True, 'target_ip': '192.168.56.101', 'scope': '192.168.56.101/32', 'allowed_ports': '1-200', 'pipeline': ['recon', 'vuln_analyst', 'report_writer'], 'message': 'Test approved within scope'}"
     },
     {
-      "timestamp": "2026-04-25T18:43:34.691321+00:00",
+      "timestamp": "2026-04-27T03:32:37.324728+00:00",
       "agent": "orchestrator",
       "event_message": "Starting agent pipeline"
     },
     {
-      "timestamp": "2026-04-25T18:43:34.692162+00:00",
+      "timestamp": "2026-04-27T03:32:37.326399+00:00",
       "agent": "vuln_analyst",
       "event_message": "VULN_ANALYST started"
     },
     {
-      "timestamp": "2026-04-25T18:43:34.692965+00:00",
+      "timestamp": "2026-04-27T03:32:37.328117+00:00",
       "agent": "report_writer",
-      "event_message": "Writing report for 0 finding(s) against 192.168.56.101"
+      "event_message": "report_writer starting"
+    },
+    {
+      "timestamp": "2026-04-27T03:32:37.328138+00:00",
+      "agent": "report_writer",
+      "event_message": "Writing a report on 0 finding(s) against 192.168.56.101."
+    },
+    {
+      "timestamp": "2026-04-27T03:32:37.353377+00:00",
+      "agent": "report_writer",
+      "event_message": "Calling LLM to create JSON report data. Input: Write a complete, professional penetration test report\nbased on the data below. Follow the report schema in your system prompt.\n\nTARGET SCOPE:   192.168.56.101/32\nSCAN DATE:      2026-04-27T03:32:34.458709+00:00\nALLOWED PORTS:  ['1', '200']\nOVERALL RISK:   Info\n\nVULNERABILITIES FOUND:\n[]\n\nOPEN PORTS SUMMARY:\n[]\n\nOS DETECTED: unknown\n\nRISK MATRIX: {\"Critical\": 0, \"High\": 0, \"Medium\": 0, \"Low\": 0, \"Info\": 0}\n\nWEB PATHS FOUND: []\n\nReturn ONLY a COMPLETE HTML document with inline CSS styling. No markdown. No explanation text outside the HTML."
     }
   ]
 }

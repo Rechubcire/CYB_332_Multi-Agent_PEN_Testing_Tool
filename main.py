@@ -8,7 +8,7 @@ import sys
 import argparse
 import ipaddress
 from src.agents.orchestrator import build_graph
-from src.core.state import initialise_state, save_state_to_disk
+from src.core.state import initialise_state, save_state_to_disk, save_report_to_disk
 from src.core.scope_guard import ScopeViolationError
 
 def is_valid_ip(target_ip: str) -> bool:
@@ -118,6 +118,7 @@ def main():
         # but that is handled by the report writer agent (agent 4)
         print("Saving files\n")
         save_state_to_disk(final_state)
+        save_report_to_disk(final_state.get('report'))
 
         print("Pipeline complete\n")
         sys.exit(0)

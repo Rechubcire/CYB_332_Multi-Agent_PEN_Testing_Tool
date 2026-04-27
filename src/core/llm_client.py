@@ -26,7 +26,7 @@ def get_llm_model():
         return ChatAnthropic(
             model="claude-sonnet-4-5",
             api_key=os.getenv("ANTHROPIC_API_KEY"),
-            max_tokens=1500
+            max_tokens=10000
         )
 
     elif provider == "groq":
@@ -40,7 +40,7 @@ def get_llm_model():
         raise ValueError(f"Unknown LLM Provider: '{provider}'. Please use Anthropic or Groq")
 
 
-def call_llm(system_prompt: str, user_content: str, agent_name="unknown") -> str:
+def call_llm(system_prompt: str, user_content: str, agent_name="unknown", parse_json=True) -> str:
     """
     This is the entry point for all agents into the llm
     uses the provider selected from the user's .env file
@@ -72,7 +72,12 @@ def call_llm(system_prompt: str, user_content: str, agent_name="unknown") -> str
 
     cleaned = cleaned.strip()
 
+    # Do not try to parse report output
+    if not parse_json:
+        log_llm_call(agent_name, system_prompt, user_content, raw_text, cleaned)
+        return cleaned
 
+    # parse the json output from llm
     try:
         parsed = json.loads(cleaned)
     except json.JSONDecodeError:
@@ -83,7 +88,7 @@ def call_llm(system_prompt: str, user_content: str, agent_name="unknown") -> str
 
     return parsed
 
-def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, max_attempts=3) -> str:
+def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, max_attempts=3, parse_json=True) -> str:
     """
     This uses call_llm() with retry logic. Adds a message
     to the end of the prompt if the llm returns invalid
@@ -93,7 +98,7 @@ def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, 
 
     for attempt in range(1, max_attempts + 1):
         try:
-            result = call_llm(system_prompt, user_content + retry_message, agent_name=agent_name)
+            result = call_llm(system_prompt, user_content + retry_message, agent_name=agent_name, parse_json=parse_json)
             return result # successful call
         except json.JSONDecodeError as e:
             if attempt == max_attempts:
@@ -101,7 +106,7 @@ def call_llm_with_retry(system_prompt: str, user_content: str, agent_name: str, 
             retry_message = (
                 "\n\n--- Correction Required ---\n"
                 "Your previous response could not be parsed as valid JSON.\n"
-                "The ERROR was {e}\n"
+                f"The ERROR was {e}\n"
                 "REQUIREMENT: Return ONLY VALID JSON. No Markdown. No Explanation. No Code Fences.\n"
                 "--- End of Correction ---"
             )
