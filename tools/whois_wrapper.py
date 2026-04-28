@@ -15,14 +15,14 @@ def run_whois(target_ip: str) -> str:
             ["whois",target_ip],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=45
         )
         if result.returncode != 0:
             print(f'whois returned non-zero exit code : {result.returncode}')
             return ''
         return result.stdout
     except subprocess.TimeoutExpired:
-        print('whois timed out after 30 seconds')
+        print('whois timed out after 45 seconds')
         return ''
     except FileNotFoundError:
         print('whois is not installed or not in PATH')

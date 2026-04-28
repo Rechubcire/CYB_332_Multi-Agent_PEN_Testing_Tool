@@ -105,7 +105,7 @@ def main():
     print("Input verified. Initializing state and building the pipeline.\n")
 
      # Create initial state from user input and build graph
-    initial_state = initialise_state(args.target_ip, args.scope, port_list)
+    initial_state = initialise_state(args.target_ip, args.scope, args.port)
     graph = build_graph()
 
     try:

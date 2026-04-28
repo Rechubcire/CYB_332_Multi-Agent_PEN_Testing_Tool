@@ -54,6 +54,8 @@ def report_agent(state: AgentState) -> dict:
         + json.dumps(risk_counts)
         + "\n\nWEB PATHS FOUND: "
         + str(web_paths)
+        + "Raw Recon"
+        + json.dumps(recon)
         + "\n\nReturn ONLY a COMPLETE HTML document with inline CSS styling. No markdown. No explanation text outside the HTML."
     )
     
