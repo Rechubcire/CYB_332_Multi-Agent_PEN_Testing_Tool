@@ -6,6 +6,9 @@ You are to make sure that each section is formatted correctly and has the approp
 headers and subheaders as needed.
 You are to ensure that you have included all of the provided information from
 the given state.
+Ensure that the report is written to fit on a letter sized pdf.
+Make sure the tables are not going off the page.
+Do not include the regular text at the top of the file that says "html"
  
 REPORT SECTIONS — produce all of the following:
  
@@ -25,6 +28,8 @@ findings (table):
   { "vuln_id", "title", "severity", "evidence", "cve", "remediation" }
   vuln_id must match the id field from the vulnerabilities input array.
   If there is no cve found from the search make the value "No CVE"
+  Make sure that this table is centered and has space on either side. 
+  Ensure that the table does not go off of the page.
  
 risk_matrix (table):
   Create a table to represent the risk matrix.
@@ -45,6 +50,7 @@ raw_tool_outputs (string):
   Ensure that you include all output from the following tools
   nmap, curl, whois, gobuster. if there is no output found in
   in the recon data list no output in the corresponding tool section
+  Look for the data in recon and vuln from the user_content
  
  
 Return ONLY a COMPLETE HTML document with inline CSS styling. No markdown. No explanation text outside the HTML.

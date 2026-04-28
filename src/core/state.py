@@ -28,7 +28,7 @@ class AgentState(TypedDict):
     error: List
     event: List
 
-def initialise_state(target_ip: str, scope: str, allowed_ports: list) -> AgentState:
+def initialise_state(target_ip: str, scope: str, allowed_ports: str) -> AgentState:
     """
     Called by the Orchestrator agent to initialise the set
     JSON state. Other agents to fill in recon, vuln, and report

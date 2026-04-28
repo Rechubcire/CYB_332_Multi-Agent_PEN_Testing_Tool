@@ -14,7 +14,7 @@ from tools.gobuster_wrapper import run_gobuster
 from tools.curl_wrapper import grab_http_headers
 from tools.whois_wrapper import run_whois
 
-def recon_node(state: AgentState) -> dict:
+def recon_agent(state: AgentState) -> dict:
     """
     Runs all recon tools against the target, then calls the LLM
     to extract the structured JSON from the combined outputs.
@@ -123,8 +123,10 @@ def recon_node(state: AgentState) -> dict:
     # Attach raw outputs for report appendix
     recon_data["nmap_raw"] = nmap_result
     recon_data["whois_raw"] = whois_result
+    recon_data["gobuster_raw"] = gobuster_result
+    recon_data["curl_raw"] = curl_result
 
     # Log: Recon complete
     updates = {**updates, **log_event(current_state, agent, "Recon complete.")}
 
-    return {**updates, "recon": recon_data, "status": "recon_complete"}
+    return {**updates, "recon": recon_data, "status": "Running"}
