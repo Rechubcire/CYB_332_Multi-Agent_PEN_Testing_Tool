@@ -10,8 +10,11 @@ from src.core.state import AgentState, log_event, log_error, write_report
 
 def report_agent(state: AgentState) -> dict:
     """
-    LangGraph node function — Node 4 of 4.
+    Report writer agent. Call the LLM to create a report.
+    LLM returns HTML code that is then converted into a pdf
+    to make it easier to read.
     """
+    print("Report writer Started \n")
     updates = {}
     current_state = state
     agent = "report_writer"
@@ -86,12 +89,8 @@ def report_agent(state: AgentState) -> dict:
 def _count_severities(vuln_list: list) -> dict:
     """
     Counts how many vulnerabilities fall into each severity bucket.
-
-    Args:
-        vuln_list: List of vulnerability dicts from state['vulnerabilities']
-
-    Returns:
-        Dict with keys Critical, High, Medium, Low, Info and integer counts
+    This is to ensure that there is a correct count since the LLM
+    can sometimes be incorrect with its counting.
     """
     counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Info": 0}
     for vuln in vuln_list:
@@ -106,16 +105,8 @@ def _count_severities(vuln_list: list) -> dict:
 
 def _determine_overall_risk(risk_counts: dict) -> str:
     """
-    Returns the highest severity that has at least one finding.
-
-    Walk from most severe to least severe so the first non-zero bucket wins.
-    Falls back to 'Info' if no findings exist at all.
-
-    Args:
-        risk_counts: Output of _count_severities()
-
-    Returns:
-        One of: 'Critical', 'High', 'Medium', 'Low', 'Info'
+    Determines the overall risk, based on the highest 
+    occurrence of risk level from the risk counts.
     """
     for level in ["Critical", "High", "Medium", "Low"]:
         if risk_counts.get(level, 0) > 0:

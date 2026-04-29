@@ -20,6 +20,8 @@ def recon_agent(state: AgentState) -> dict:
     to extract the structured JSON from the combined outputs.
     Returns the state update to the orchestrator
     """
+    print("Reconnaissance Started \n")
+    
     # Event logging variables
     updates = {}
     current_state = state

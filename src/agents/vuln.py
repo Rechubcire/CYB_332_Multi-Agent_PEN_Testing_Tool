@@ -15,6 +15,7 @@ def vuln_agent(state: AgentState) -> dict:
     Reads state['recon'], calls LLM with the vuln_analyst_system prompt,
     returns parsed list of vulnerabilities for state['vuln'].
     """
+    print("Vulnerability Analyst Started \n")
     updates = {}
     current_state = state
     agent = 'vuln_analyst'

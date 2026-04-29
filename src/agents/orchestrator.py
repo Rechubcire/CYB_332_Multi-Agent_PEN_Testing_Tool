@@ -42,15 +42,15 @@ def build_graph():
     # Compile the workflow into a graph
     graph = workflow.compile()
 
-    # Generate a mermaid diagram of the graph
-    png_bytes = graph.get_graph().draw_mermaid_png(max_retries=3)
+    # # Generate a mermaid diagram of the graph
+    # png_bytes = graph.get_graph().draw_mermaid_png(max_retries=3)
 
-    # Make sure the output dir exist
-    os.makedirs("output", exist_ok=True)
-    with open("output/workflow_diagram.png", "wb") as file:
-        file.write(png_bytes)
+    # # Make sure the output dir exist
+    # os.makedirs("output", exist_ok=True)
+    # with open("output/workflow_diagram.png", "wb") as file:
+    #     file.write(png_bytes)
 
-    print("Returning graph")
+    # print("Returning graph")
     return graph
 
 def orchestrator_agent(state: AgentState) -> dict:
