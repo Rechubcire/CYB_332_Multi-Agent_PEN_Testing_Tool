@@ -119,14 +119,14 @@ source venv/bin/activate
 ```
 <p><strong>Create your .env file</strong></p>
 
-```
+```bash
 nano .env.example
 ```
-<p>Once you are in the .env.example file change the provider to either "gorq" or "anthropic" depending on what model you are using. Next, enter your API keys for the provider(s) you are using. Once you have entered your API keys and selected your provider save the file as ".env" and exit.</p>
+<p>Once you are in the .env.example file change the provider to either "gorq" or "anthropic" depending on what model you are using (We suggest Anthropic). Next, enter your API keys for the provider(s) you are using. Once you have entered your API keys and selected your provider save the file as ".env" and exit.</p>
 
 <p><strong>Commands to save and write the .env file</strong></p>
 
-```
+```bash
 Ctrl + o
 #Change name from ".env.example" to ".env"
 Enter
@@ -135,15 +135,16 @@ Ctrl + x
 
 <p><strong>Run the requirements.txt file to install all of the Python dependencies</strong></p>
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
 <p><strong>Run the tool command</strong></p>
 <p>Make sure that you are in the tool folder when running this command</p>
+<p>Run with "sudo" to prevent permission-based errors. You can also run the shell as administrator</p>
 
-```
-python main.py --target_ip YOUR_TARGET_IP --scope CIDR_SCOP_IP --port PORT_RANGE_TO_TEST
+```bash
+sudo $(which python) main.py --target_ip YOUR_TARGET_IP --scope CIDR_SCOP_IP --port PORT_RANGE_TO_TEST
 ```
 
 
